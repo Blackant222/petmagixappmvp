@@ -1,34 +1,45 @@
 from fastapi import APIRouter, Depends, HTTPException
-from typing import Dict, Any
-from app.services.chat.vet_bot import VetBot
-from app.api.deps import get_current_user, get_db
 from sqlalchemy.orm import Session
-from app.schemas.chat import ChatRequest, ChatResponse
+from app.core.deps import get_db, get_current_user
+from app.models.user import User
+from app.models.pet import PetMetrics
+from app.services.ai import get_ai_response
+from pydantic import BaseModel
+import uuid
 
-router = APIRouter()
-vet_bot = VetBot()
+router = APIRouter(prefix="/vet", tags=["vet"])
+
+class ChatRequest(BaseModel):
+    message: str
+
+class ChatResponse(BaseModel):
+    response: str
+    message_id: str
 
 @router.post("/chat", response_model=ChatResponse)
 async def chat_with_vet(
     chat_request: ChatRequest,
-    current_user: Dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    """
-    Chat with the AI vet assistant
-    """
-    # Get the latest pet metrics for context
-    # You can modify this based on your database schema
-    pet_data = db.query(PetMetrics).filter(
-        PetMetrics.user_id == current_user["id"]
-    ).order_by(PetMetrics.timestamp.desc()).first()
-    
-    if not pet_data:
-        pet_data = {}  # Fallback to empty data if no metrics found
-    
-    response = await vet_bot.chat(
-        message=chat_request.message,
-        pet_data=pet_data.__dict__ if pet_data else {}
-    )
-    
-    return ChatResponse(response=response)
+    try:
+        # Get pet metrics if available
+        pet_metrics = db.query(PetMetrics).filter(
+            PetMetrics.user_id == current_user.id
+        ).first()
+
+        # Get AI response
+        response = await get_ai_response(
+            message=chat_request.message,
+            pet_metrics=pet_metrics
+        )
+
+        return ChatResponse(
+            response=response,
+            message_id=str(uuid.uuid4())
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error processing chat request: {str(e)}"
+        )

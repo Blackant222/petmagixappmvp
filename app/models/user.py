@@ -1,4 +1,3 @@
-# Last modified: 2025-03-01 14:05:59 by Blackant222
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
 from sqlalchemy.orm import relationship
 from app.models.base import TimeStampedBase

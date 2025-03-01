@@ -1,18 +1,19 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.core.database import init_db
-from app.api import auth, pets, habits, metrics, rewards, users  # Add users import
-from app.api import chat
+from app.api import auth, pets, habits, metrics, rewards, users, chat  # Add chat import
+from app.db.session import engine
+from app.db.base import Base
+
+# Create database tables
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    description="API for PetMagix application",
-    version=settings.VERSION,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json"
+    version=settings.VERSION
 )
 
-# Set all CORS enabled origins
+# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -23,22 +24,9 @@ app.add_middleware(
 
 # Include routers
 app.include_router(auth.router, prefix=settings.API_V1_STR)
-app.include_router(users.router, prefix=settings.API_V1_STR)  # Add users router
 app.include_router(pets.router, prefix=settings.API_V1_STR)
 app.include_router(habits.router, prefix=settings.API_V1_STR)
 app.include_router(metrics.router, prefix=settings.API_V1_STR)
 app.include_router(rewards.router, prefix=settings.API_V1_STR)
-app.include_router(chat.router, prefix=f"{settings.API_V1_STR}/vet", tags=["vet"])
-
-# On startup event for DB initialization
-@app.on_event("startup")
-async def startup_event():
-    init_db()
-
-@app.get("/")
-async def root():
-    return {
-        "name": settings.PROJECT_NAME,
-        "version": settings.VERSION,
-        "message": "Welcome to PetMagix API!"
-    }
+app.include_router(users.router, prefix=settings.API_V1_STR)
+app.include_router(chat.router, prefix=settings.API_V1_STR)  # Add chat router
