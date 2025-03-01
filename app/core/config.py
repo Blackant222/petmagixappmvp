@@ -1,8 +1,6 @@
-# Last modified: 2025-03-01 12:29:18 by Blackant222
-try:
-    from pydantic_settings import BaseSettings
-except ImportError:
-    from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
+from typing import Optional
+import secrets
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "PetMagix API"
@@ -10,18 +8,19 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     
     # Security
-    SECRET_KEY: str = "super-secret-key-2025-03-01"  # Change in production
+    SECRET_KEY: str = secrets.token_urlsafe(32)  # Generate a new secret key using secrets
+    ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
     
-    # Database
-    DATABASE_URL: str = "sqlite:///./petmagix.db"
+    # Database settings
+    DATABASE_URL: Optional[str] = "sqlite:///petmagix.db"  # Optional, can be overridden
     
-    # AI
+    # AI Settings
     XAI_API_KEY: str = "xai-0ENHv44ZrlYuaaa4HnpImP27NijUPMR4BPbxs7xK6VeGxoI1qPFaTBmonCTI5w8UsUc042qTOsi5xoDT"
     
-    # Default user
+    # Default user settings
     DEFAULT_USER: str = "Blackant222"
-    CURRENT_TIMESTAMP: str = "2025-03-01 12:29:18"
+    CURRENT_TIMESTAMP: str = "2025-03-01 13:32:37"
     
     class Config:
         case_sensitive = True

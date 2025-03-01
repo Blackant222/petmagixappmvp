@@ -1,6 +1,6 @@
-# Last modified: 2025-03-01 12:47:12 by Blackant222
+# Last modified: 2025-03-01 13:57:24 by Blackant222
 from pydantic import BaseModel, EmailStr
-from typing import Optional, List
+from typing import Optional
 from datetime import datetime
 
 class UserBase(BaseModel):
