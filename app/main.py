@@ -6,6 +6,15 @@ from app.db.session import engine
 from app.db.base import Base
 
 # Create database tables
+from app.models import user, pet, metric, habit, reward, chat_model  # Rename chat to chat_model
+from app.db import base
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Create tables in the correct order
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(

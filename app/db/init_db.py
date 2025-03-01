@@ -10,7 +10,7 @@ from app.models.reward import Reward
 def init_db():
     engine = create_engine(settings.DATABASE_URL)
     Base.metadata.drop_all(bind=engine)  # Drop existing tables
-    Base.metadata.create_all(bind=engine)  # Create new tables
+    Base.metadata.create_all(bind=engine)  # Create all tables in one go
 
 if __name__ == "__main__":
     init_db()
